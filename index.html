@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>குப்பணன்கோவில் - Temple Function Management (Firebase)</title>
+  <style>
+    :root{--accent:#2b6cb0;--bg:#f7fafc;--muted:#6b7280}
+    *{box-sizing:border-box;font-family:"Noto Sans Tamil",system-ui,sans-serif}
+    body{margin:0;background:var(--bg);color:#111}
+    .page{display:none}.active{display:block}
+    .welcome{text-align:center;padding:80px 20px}
+    .welcome h1{font-size:2.3em;color:var(--accent);margin-bottom:10px}
+    .welcome p{color:var(--muted);margin-bottom:24px}
+    .welcome button.primary{background:var(--accent);color:#fff;border:0;padding:10px 20px;border-radius:8px;cursor:pointer;max-width:300px}
+    .container{max-width:980px;margin:20px auto;background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(11,15,30,0.06)}
+    .navbar{display:flex;justify-content:space-around;background:var(--accent);color:#fff;padding:10px;border-radius:8px;margin-bottom:16px}
+    .navbar button{background:transparent;border:0;color:#fff;font-weight:600;cursor:pointer}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;margin-bottom:10px}
+    button.primary{background:var(--accent);color:#fff;border:0;padding:10px 12px;border-radius:8px;cursor:pointer}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left}
+    th{background:#fbfdff}
+    ul{list-style:none;padding:0;margin:0}
+    li{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fcfeff;border:1px solid #eef2f7;margin-bottom:8px}
+    li button{background:#ef4444;color:#fff;border:0;padding:6px 8px;border-radius:6px;cursor:pointer}
+    .filter-box{max-width:760px;margin:0 auto;padding:16px;border-radius:10px;background:#fff;border:1px solid #eef2f7;box-shadow:0 6px 20px rgba(11,15,30,0.03)}
+    #grandTotal{text-align:right;font-weight:700;margin-top:10px}
+    .note{font-size:13px;color:var(--muted);margin-top:8px}
+  </style>
+</head>
+<body>
+<section id="loginPage" class="page active welcome">
+    background: <img src="aa copy.jpg" alt="">;
+  <h1>குப்பணன்கோவில் - Login </h1>
+  <p>Admin and Volunteer Access Only. Please sign in.</p>
+  <input id="loginEmail" type="email" placeholder="Email (Username)" style="max-width:300px;margin-bottom:10px;" required />
+  <input id="loginPassword" type="password" placeholder="Password" style="max-width:300px;margin-bottom:20px;" required />
+  <button class="primary" onclick="handleLogin()">Sign In</button>
+  <p id="loginError" style="color:#ef4444;margin-top:15px;font-weight:600;"></p>
+  <p class="note" style="margin-top:40px;">Data will be synced across devices using Firebase Firestore.</p>
+</section>
+
+<section id="dashboardPage" class="page">
+  <div class="container">
+    <div class="navbar">
+      <button onclick="showSection('participants')">Add Participants Details</button>
+      <button id="functionsBtn" onclick="showSection('functions')">Add Function Name</button>
+      <button onclick="showExportPage()">Export Function Details</button>
+      <button onclick="handleLogout()">Logout</button>
+    </div>
+
+    <div id="participants" class="section active">
+      <h2>Add Participants Details</h2>
+      <form id="entryForm" onsubmit="return false;">
+        <label for="funcSelect">Function Name</label>
+        <select id="funcSelect"></select>
+        <label for="personName">Person Name</label>
+        <input id="personName" type="text" placeholder="Enter name" required />
+        <label for="amount">Amount (INR)</label>
+        <input id="amount" type="number" min="0" step="0.01" placeholder="0.00" required />
+        <label for="remarks">Remarks</label>
+        <input id="remarks" type="text" placeholder="Donation / Seva" />
+        <div style="display:flex;gap:10px;">
+          <button class="primary" onclick="addParticipant()">Add</button>
+          <button type="button" onclick="clearParticipantForm()">Clear</button>
+        </div>
+      </form>
+
+      <table id="entriesTable">
+        <thead><tr><th>#</th><th>Function</th><th>Person</th><th>Amount</th><th>Remarks</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="3">Total</td><td id="totalAmount">₹0.00</td><td colspan="3"></td></tr></tfoot>
+      </table>
+      <p class="note">Entries are saved to cloud and will appear on other devices signed into the same Firebase project.</p>
+    </div>
+
+    <div id="functions" class="section" style="display:none;">
+      <h2>Add Function Name</h2>
+      <input id="newFunction" type="text" placeholder="New Function Name" />
+      <div style="margin-top:8px;">
+        <button class="primary" onclick="addFunction()">Add Function</button>
+      </div>
+      <h3 style="margin-top:14px;">Available Functions</h3>
+      <ul id="functionList"></ul>
+      <p class="note">Deleting a function will also delete its related entries.</p>
+    </div>
+  </div>
+</section>
+
+<section id="exportPage" class="page">
+  <div class="container">
+    <div class="navbar">
+      <button onclick="showDashboard()">Add Participants Details</button>
+      <button onclick="showDashboard(); showSection('functions')">Add Function Name</button>
+      <button onclick="showExportPage()">Export Function Details</button>
+      <button onclick="handleLogout()">Logout</button>
+    </div>
+
+    <h2>Export Function Details</h2>
+    <div class="filter-box">
+      <label for="filterFunc">Select Function</label>
+      <select id="filterFunc"></select>
+
+      <label for="filterMonth">Select Month</label>
+      <select id="filterMonth"><option value="all">All Months</option></select>
+
+      <div style="margin-top:10px;text-align:center;">
+        <button class="primary" onclick="filterAndShow()">Show Details</button>
+        <button class="primary" style="margin-left:8px;" onclick="exportFiltered()">Export as Excel</button>
+      </div>
+
+      <div id="grandTotal">Grand Total: ₹0.00</div>
+      <table id="exportTable" style="margin-top:12px;width:100%;border-collapse:collapse;">
+        <thead><tr><th>#</th><th>Function</th><th>Person</th><th>Amount</th><th>Remarks</th><th>Date</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">Export includes Grand Total row at the bottom.</p>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+/* ================= FIREBASE CONFIG ================= */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "temple-final-2025.firebaseapp.com",
+  projectId: "temple-final-2025",
+  storageBucket: "temple-final-2025.firebasestorage.app",
+  messagingSenderId: "714726609812",
+  appId: "1:714726609812:web:d819636e5f42a314ca7581"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+if (db.enablePersistence) {
+  db.enablePersistence().catch(err => console.warn('Persistence error:', err.code));
+}
+
+/* ================= GLOBAL VARIABLES ================= */
+let currentUser = null;
+let currentRole = null;
+let functionsLocal = [];
+let entriesLocal = [];
+
+const el = id => document.getElementById(id);
+const formatINR = v => '₹' + Number(v || 0).toLocaleString('en-IN',{minimumFractionDigits:2});
+
+/* ================= AUTH ================= */
+async function handleLogin() {
+  const email = el('loginEmail').value;
+  const password = el('loginPassword').value;
+  const errorEl = el('loginError');
+  errorEl.textContent = '';
+
+  if (!email || !password) {
+    errorEl.textContent = 'மின்னஞ்சல் மற்றும் கடவுச்சொல்லை உள்ளிடவும்.';
+    return;
+  }
+
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
+    const userDoc = await db.collection('users').doc(user.uid).get();
+
+    if (userDoc.exists) {
+      const role = userDoc.data().role;
+      if (['admin','volunteer'].includes(role)) {
+        currentUser = user;
+        currentRole = role;
+        showDashboard();
+        attachRealtimeListeners();
+        return;
+      }
+    }
+    await auth.signOut();
+    errorEl.textContent = 'அணுகல் மறுக்கப்பட்டது: உங்கள் கணக்கு அங்கீகரிக்கப்படவில்லை.';
+  } catch (error) {
+    if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      errorEl.textContent = 'உள்நுழைவு தோல்வியடைந்தது: தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்.';
+    } else {
+      errorEl.textContent = 'உள்நுழைவு தோல்வியடைந்தது.';
+    }
+  }
+}
+
+function handleLogout() {
+  auth.signOut().then(() => {
+    currentUser = null;
+    currentRole = null;
+    showPage('loginPage');
+    el('loginEmail').value = '';
+    el('loginPassword').value = '';
+    el('loginError').textContent = 'வெற்றிகரமாக வெளியேறப்பட்டது.';
+  });
+}
+
+/* ================= UI CONTROL ================= */
+function showDashboard() {
+  if (!currentUser) { showPage('loginPage'); return; }
+  const functionsBtn = el('functionsBtn');
+  functionsBtn.style.display = currentRole === 'volunteer' ? 'none' : 'block';
+  showPage('dashboardPage');
+  showSection('participants');
+  refreshFunctionListUI();
+  populateMonths();
+}
+
+function showExportPage() {
+  if (!currentUser) { showPage('loginPage'); return; }
+  refreshFunctionListUI();
+  populateMonths();
+  showPage('exportPage');
+  filterAndShow();
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el(id).classList.add('active');
+}
+function showSection(section) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  el(section).style.display='block';
+}
+
+/* ================= FIRESTORE LISTENERS ================= */
+function attachRealtimeListeners() {
+  if (!currentUser) return;
+  db.collection('functions').orderBy('createdAt','asc').onSnapshot(snapshot=>{
+    functionsLocal = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    refreshFunctionListUI();
+  });
+  db.collection('entries').orderBy('date','asc').onSnapshot(snapshot=>{
+    entriesLocal = snapshot.docs.map(doc=>{
+      const data = doc.data();
+      return {
+        id:doc.id,
+        func:data.func,
+        person:data.person,
+        amount:Number(data.amount),
+        remarks:data.remarks||'',
+        date:(data.date?.toDate?data.date.toDate():new Date()).toISOString()
+      };
+    });
+    renderEntriesUI();
+    if (document.querySelector('#exportPage').classList.contains('active')) filterAndShow();
+  });
+}
+
+/* ================= CRUD: FUNCTIONS ================= */
+async function addFunction() {
+  if (currentRole!=='admin') return alert('Access Denied: Only Admins can add functions.');
+  const name = el('newFunction').value.trim();
+  if (!name) return alert('Enter function name');
+  if (functionsLocal.some(f=>f.name.toLowerCase()===name.toLowerCase())) {
+    el('newFunction').value=''; return alert('Function already exists');
+  }
+  await db.collection('functions').add({name,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  el('newFunction').value='';
+}
+
+async function deleteFunction(index) {
+  if (currentRole!=='admin') return alert('Access Denied: Only Admins can delete functions.');
+  const fn = functionsLocal[index];
+  if (!fn) return;
+  if (!confirm(`Delete function "${fn.name}" and all its entries?`)) return;
+  await db.collection('functions').doc(fn.id).delete();
+  const q = await db.collection('entries').where('func','==',fn.name).get();
+  const batch = db.batch();
+  q.forEach(d=>batch.delete(d.ref));
+  await batch.commit();
+}
+
+/* ================= CRUD: ENTRIES ================= */
+async function addParticipant() {
+  const func = el('funcSelect').value;
+  const person = el('personName').value.trim();
+  const amount = parseFloat(el('amount').value);
+  const remarks = el('remarks').value.trim();
+  if (!person || isNaN(amount) || amount<=0) return alert('Please enter valid name and amount');
+
+  const payload = {func,person,amount,remarks,date:firebase.firestore.FieldValue.serverTimestamp()};
+  await db.collection('entries').add(payload);
+  clearParticipantForm();
+}
+function clearParticipantForm(){el('personName').value='';el('amount').value='';el('remarks').value='';}
+async function deleteEntry(id){
+  if (currentRole!=='admin') return alert('Access Denied: Only Admins can delete entries.');
+  if (!confirm('Delete this entry?')) return;
+  await db.collection('entries').doc(id).delete();
+}
+
+/* ================= UI RENDER ================= */
+function refreshFunctionListUI() {
+  const sel = el('funcSelect'), list = el('functionList'), filterSel = el('filterFunc');
+  sel.innerHTML=''; list.innerHTML=''; filterSel.innerHTML='<option value="all">All Functions</option>';
+  functionsLocal.forEach((f,idx)=>{
+    const opt=document.createElement('option');opt.value=f.name;opt.textContent=f.name;sel.appendChild(opt);
+    filterSel.appendChild(opt.cloneNode(true));
+    const li=document.createElement('li');
+    li.innerHTML = currentRole==='admin'
+      ? `<span>${f.name}</span><div><button onclick="deleteFunction(${idx})">Delete</button></div>`
+      : `<span>${f.name}</span>`;
+    list.appendChild(li);
+  });
+  if (functionsLocal.length===0 && currentRole==='admin') {
+    list.innerHTML='<li>Please add the first Function Name in this section.</li>';
+  }
+}
+
+function renderEntriesUI() {
+  const tbody = el('entriesTable').querySelector('tbody'); tbody.innerHTML='';
+  let total=0;
+  entriesLocal.forEach((e,i)=>{
+    const dateStr=new Date(e.date).toLocaleDateString('en-IN');
+    const deleteBtn = currentRole==='admin' ? `<td><button onclick="deleteEntry('${e.id}')">Delete</button></td>` : `<td></td>`;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${e.func}</td><td>${e.person}</td><td>${formatINR(e.amount)}</td><td>${e.remarks}</td><td>${dateStr}</td>${deleteBtn}`;
+    tbody.appendChild(tr);
+    total+=Number(e.amount||0);
+  });
+  el('totalAmount').textContent=formatINR(total);
+}
+
+/* ================= EXPORT ================= */
+function populateMonths(){
+  const months=['ஜனவரி','பிப்ரவரி','மார்ச்','ஏப்ரல்','மே','ஜூன்','ஜூலை','ஆகஸ்ட்','செப்டம்பர்','அக்டோபர்','நவம்பர்','டிசம்பர்'];
+  const mSel=el('filterMonth'); mSel.innerHTML='<option value="all">அனைத்து மாதங்களும்</option>';
+  months.forEach((m,i)=>mSel.add(new Option(m,i)));
+}
+
+function filterAndShow(){
+  const fFunc=el('filterFunc').value; const fMonth=el('filterMonth').value;
+  const tbody=el('exportTable').querySelector('tbody'); tbody.innerHTML='';
+  let total=0;
+  const filtered=entriesLocal.filter(e=>{
+    const d=new Date(e.date);
+    const matchFunc=(fFunc==='all'||e.func===fFunc);
+    const matchMonth=(fMonth==='all'||d.getMonth()==fMonth);
+    return matchFunc&&
