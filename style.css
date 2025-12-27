@@ -1,4 +1,3 @@
-/* RESET */
 * {
     margin: 0;
     padding: 0;
@@ -6,14 +5,12 @@
     font-family: "Segoe UI", Arial, sans-serif;
 }
 
-/* BODY */
 body {
     background-color: #f4f6f8;
     color: #333;
     line-height: 1.6;
 }
 
-/* HEADER */
 header {
     background-color: #1f2933;
     color: white;
@@ -30,7 +27,6 @@ header p {
     margin-top: 8px;
 }
 
-/* SECTIONS */
 section {
     max-width: 900px;
     margin: 30px auto;
@@ -39,7 +35,6 @@ section {
     border-radius: 8px;
 }
 
-/* SECTION TITLES */
 section h2 {
     margin-bottom: 15px;
     color: #1f2933;
@@ -47,7 +42,6 @@ section h2 {
     padding-bottom: 6px;
 }
 
-/* SKILLS */
 #skills ul {
     list-style-type: square;
     padding-left: 20px;
@@ -57,7 +51,6 @@ section h2 {
     margin-bottom: 6px;
 }
 
-/* PROJECTS */
 .project {
     margin-bottom: 15px;
 }
@@ -67,12 +60,10 @@ section h2 {
     margin-bottom: 4px;
 }
 
-/* CONTACT */
 #contact p {
     margin-bottom: 8px;
 }
 
-/* FOOTER */
 footer {
     text-align: center;
     padding: 15px;
