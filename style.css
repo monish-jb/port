@@ -1,21 +1,24 @@
+/* RESET */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
 }
 
+/* BODY */
 body {
     background-color: #f4f6f8;
     color: #333;
     line-height: 1.6;
 }
 
+/* HEADER */
 header {
     background-color: #1f2933;
     color: white;
     text-align: center;
-    padding: 30px 10px;
+    padding: 40px 15px;
 }
 
 header h1 {
@@ -24,41 +27,52 @@ header h1 {
 
 header p {
     font-size: 1.1rem;
-    margin-top: 5px;
+    margin-top: 8px;
 }
 
+/* SECTIONS */
 section {
     max-width: 900px;
     margin: 30px auto;
-    background: white;
+    background-color: white;
     padding: 25px;
     border-radius: 8px;
 }
 
+/* SECTION TITLES */
 section h2 {
     margin-bottom: 15px;
     color: #1f2933;
     border-bottom: 2px solid #e5e7eb;
-    padding-bottom: 5px;
+    padding-bottom: 6px;
 }
 
+/* SKILLS */
 #skills ul {
     list-style-type: square;
     padding-left: 20px;
 }
 
+#skills li {
+    margin-bottom: 6px;
+}
+
+/* PROJECTS */
 .project {
     margin-bottom: 15px;
 }
 
 .project h3 {
     color: #2563eb;
+    margin-bottom: 4px;
 }
 
+/* CONTACT */
 #contact p {
     margin-bottom: 8px;
 }
 
+/* FOOTER */
 footer {
     text-align: center;
     padding: 15px;
